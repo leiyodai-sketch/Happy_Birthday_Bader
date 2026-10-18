@@ -10,9 +10,9 @@
 <meta name="theme-color" content="#140e1c">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Chewy&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#120d1a;--bg2:#2a0f1f;--red:#d3202e;--orange:#ff7a2f;--ink:#f7efe6;--panel:#1d1428;--line:#ff7a2f;}
+:root{--bg:#120d1a;--bg2:#2a0f1f;--red:#d3202e;--orange:#ff7a2f;--ink:#f7efe6;--panel:#1d1428;--line:#ff7a2f;--paper:#f7efe6;--pen:#2a1620;}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{font-family:"Rajdhani","Segoe UI",Tahoma,sans-serif;font-weight:600;color:var(--ink);background:radial-gradient(130% 90% at 50% 0%,var(--bg2),var(--bg));overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -180,12 +180,41 @@ button{font:inherit;color:inherit;cursor:pointer}
 #rain.on{opacity:1}
 .songbtn{font-size:20px;padding:6px 24px;color:#fff;margin-top:6px;text-decoration:none;display:inline-block}
 @media (prefers-reduced-motion:reduce){#rain{display:none}}
+/* star game */
+.btn:disabled{opacity:.4;cursor:not-allowed}
+#starCount{font-size:clamp(20px,5vh,28px);color:#ffd166;font-weight:700;white-space:nowrap}
+#sky{position:relative;height:clamp(210px,62vh,440px);border:2px solid var(--orange);border-radius:14px;overflow:hidden;background:radial-gradient(90% 80% at 50% 110%,#4a1032,transparent 70%),linear-gradient(#0b1030,#1d1033 70%,#2a0f2a)}
+#sky .tw{position:absolute;border-radius:50%;background:#fff;opacity:.7;animation:twk 3s ease-in-out infinite}
+@keyframes twk{50%{opacity:.15}}
+#skyHint{position:absolute;left:0;right:0;bottom:8px;text-align:center;opacity:.85;font-size:clamp(16px,3.6vh,20px);z-index:2;pointer-events:none}
+#chips{position:absolute;left:10px;top:8px;right:10px;display:flex;flex-wrap:wrap;gap:6px;z-index:2;pointer-events:none}
+.chip{background:#ffd16622;border:1px solid #ffd166;color:#ffd166;border-radius:20px;padding:0 12px;font-size:clamp(15px,3.4vh,18px);animation:pop .5s}
+.star{position:absolute;z-index:3;width:clamp(54px,14vh,84px);aspect-ratio:1;background:none;border:0;cursor:pointer;font-size:clamp(46px,12vh,74px);line-height:1;color:#ffd166;text-shadow:0 0 18px #ffd166,0 0 40px #ff9a5a;animation:drift 6s ease-in-out infinite alternate,glow 1.8s ease-in-out infinite;transition:transform .45s,opacity .45s}
+.star i{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);font:700 clamp(14px,3vh,18px) "Rajdhani",sans-serif;color:#3a1630}
+.star:hover{transform:scale(1.15)}
+.star.got{animation:none;transform:scale(2.2);opacity:0;pointer-events:none}
+@keyframes drift{to{translate:var(--dx,30px) var(--dy,-20px)}}
+@keyframes glow{50%{filter:brightness(1.4)}}
+#photos{margin-top:22px}
+#photos h3{font-family:"Caveat",cursive;font-size:clamp(28px,6vh,38px);margin-bottom:10px}
+#starCard{position:fixed;inset:0;z-index:48;background:#000c;display:none;align-items:center;justify-content:center;padding:14px}
+#starCard.on{display:flex;animation:fade .4s ease}
+.scard{background:var(--paper);color:var(--pen);border-radius:14px;border-top:8px solid var(--orange);padding:16px 24px 18px;width:min(92vw,660px);max-height:88vh;overflow-y:auto;text-align:center}
+.scard small{font-size:clamp(15px,3.4vh,18px);opacity:.65}
+.scard h3{font-family:"Caveat",cursive;font-size:clamp(30px,8vh,42px);line-height:1;color:var(--red);margin:2px 0 8px}
+.scard p{font-size:clamp(17px,2.5vw,23px);line-height:1.45;margin-bottom:12px;text-align:left}
+.scard .btn{color:#fff;font-size:clamp(17px,3.8vh,22px)}
+@media (prefers-reduced-motion:reduce){.star,#sky .tw,.chip{animation:none}}
 /* ask phones to rotate */
 #rotate{display:none;position:fixed;inset:0;z-index:99;background:var(--bg);align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:14px;padding:24px;font-size:24px}
 #rotate .ic{font-size:70px;animation:turn 2s ease-in-out infinite}
 @keyframes turn{0%,100%{transform:rotate(0)}50%{transform:rotate(-90deg)}}
 @media (orientation:portrait) and (max-width:800px){#rotate{display:flex}}
 @media (prefers-reduced-motion:reduce){#mail,#hint,#rotate .ic{animation:none}}
+.madeby{margin-top:6px;font-size:clamp(18px,4vh,24px);opacity:.9}
+.blbl{font-family:"Chewy","Comic Sans MS","Chalkboard SE",cursive;font-size:clamp(34px,11vh,64px);line-height:1;color:#ffd166;text-shadow:3px 3px 0 var(--red),0 0 22px #ff7a2f88;display:inline-block;transform:rotate(-4deg);animation:silly 1.4s ease-in-out infinite}
+@keyframes silly{0%,100%{transform:rotate(-4deg) scale(1)}25%{transform:rotate(3deg) scale(1.08)}50%{transform:rotate(-2deg) scale(.96)}75%{transform:rotate(5deg) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.blbl{animation:none}}
 </style>
 </head>
 <body>
@@ -197,28 +226,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 </div>
 <div id="app">
 
-  <section class="screen on" id="lock">
-    <div class="lockbox" id="lockBox">
-      <div class="lockic">🔒</div>
-      <h1>Secret code</h1>
-      <p>Enter the code to open your birthday gift.</p>
-      <input id="code" type="text" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="····" aria-label="Secret code">
-      <div id="lockMsg" role="status"></div>
-      <div class="btns2"><button class="btn" id="unlock">Unlock</button><button class="btn alt" id="needHint">Need a hint?</button></div>
-      <div id="lockHint"></div>
-    </div>
-  </section>
-
-  <section class="screen" id="gift">
-    <div class="giftwrap">
-      <button id="giftBtn" class="gift" aria-label="Open your gift">
-        <span class="gbody"></span><span class="glid"><span class="bow">🎀</span></span>
-      </button>
-      <div class="giftcap">Tap the gift to open it</div>
-    </div>
-  </section>
-
-  <section class="screen" id="title">
+  <section class="screen on" id="title">
     <div class="cake">🎂</div>
     <h1>Happy Birthday,<br><span>Bader</span></h1>
     <p>A little game Mira made for you. Asuka is waiting... and she hates waiting.</p>
@@ -244,8 +252,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 
   <section class="screen" id="memories">
-    <div class="head"><h2>Our Memories ♥</h2><button class="btn" id="toDraw">Continue ›</button></div>
-    <div class="scroller"><div id="memGrid"></div></div>
+    <div class="head"><h2>Our Memories ♥</h2><div id="starCount" aria-live="polite">★ 0/6</div><button class="btn" id="toDraw" disabled title="Catch all the stars first">Continue ›</button></div>
+    <div class="scroller">
+      <div id="sky" role="group" aria-label="Star catching game"><p id="skyHint">Catch the stars to unlock our memories</p><div id="chips"></div></div>
+    </div>
   </section>
 
   <section class="screen" id="drawings">
@@ -258,12 +268,18 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div class="bigheart">♥</div>
       <h2>Happy 24th birthday, Bader</h2>
       <p>With love and respect, from your friend Mira 💌</p>
+      <div class="madeby">Made By mira</div>
+      <div class="blbl">Blblblbl</div>
       <button class="btn" id="restart">Play again</button>
     </div>
   </section>
 </div>
 
 <div id="card"></div><canvas id="rain"></canvas><canvas id="conf"></canvas>
+
+<div id="starCard" role="dialog" aria-modal="true" aria-label="Memory">
+  <div class="scard"><small id="scNo"></small><h3 id="scTitle"></h3><p id="scText"></p><button class="btn" id="scOk">Keep this star ✦</button></div>
+</div>
 
 <div id="lb" role="dialog" aria-modal="true" aria-label="Viewer">
   <button class="lbb" id="lbX" aria-label="Close">✕</button>
@@ -288,7 +304,9 @@ I know I've made you angry many times. I'm not always easy to deal with. But eve
 
 I respect you a lot, because you are honest, steady and kind, and you stay the same person no matter the situation. That is rare.
 
-I hope this year is full of success and joy, and that every wish you make comes true. And if Asuka got angry at you in the game, don't be sad. That's just how she says she cares 😄`,
+I hope this year is full of success and joy, and that every wish you make comes true.
+
+Most of all, I wish you all the health and wellness in the world. I hope you heal, and that you never have to suffer in your life, not ever.`,
   sign: "From your friend, Mira 💌"
 };
 
@@ -312,6 +330,16 @@ const MEMORIES = [
   {img:"memories/02.jpg", caption:"Another good day", date:"2025"},
   {text:"With you, I feel safe. I can just be myself.", date:"Mira"},
   {img:"memories/03.jpg", caption:"Us, as always", date:"2026"}
+];
+
+// STARS (Memories page game): each star reveals a word and a memory. x/y = position in the sky (percent).
+const STARS = [
+  {word:"Where it began", x:12, y:30, text:"The first time we met was in a MOBA game. That's where we got to know each other, and soon we were talking every single day."},
+  {word:"Our games", x:68, y:22, text:"I started playing Angela and Floryn for you in Mobile Legends, and we always played together. And in Minecraft, I built buildings with you, one after another."},
+  {word:"The way you treat me", x:30, y:62, text:"The way you treated me was special in those days. We laughed together and talked so much. Sometimes I stayed up all night talking to you, and I never got tired of you."},
+  {word:"When I fell for you", x:76, y:60, text:"After all those moments, that's when I fell in love with you. In all those moments, you never once said anything wrong about me. You know all my secrets, everything about me, and still you never said one bad word. You were always there for me, even though I upset you so many times."},
+  {word:"My safe place", x:48, y:38, text:"That's how I started to feel safe with you every single time. I fall asleep in your arms, and sometimes I feel like you're my own son. I'm always more afraid for you than for myself, and I try to help you with everything I can."},
+  {word:"My whole world", x:6, y:62, text:"That's how you came to mean more to me than just a very special person. You became my own little world, one I can't leave. You're the only one I let myself be weak in front of, and I never feel at ease when you're not around."}
 ];
 
 // DRAWINGS page: put pictures in the "drawings" folder.
@@ -595,7 +623,31 @@ function rainFrame(){
   }
   requestAnimationFrame(rainFrame);
 }
+// Soft rain sound (made with the browser's audio, no file needed)
+let rainSnd=null;
+function rainSound(on){
+  try{
+    if(on){
+      if(rainSnd) return;
+      const ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==="suspended") ctx.resume();
+      const len=ctx.sampleRate*2, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+      const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=700;
+      const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=7000;
+      const g=ctx.createGain(); g.gain.value=0; g.gain.linearRampToValueAtTime(.05,ctx.currentTime+2);
+      src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
+      rainSnd={ctx,g,src};
+    }else if(rainSnd){
+      const r=rainSnd; rainSnd=null;
+      r.g.gain.cancelScheduledValues(r.ctx.currentTime); r.g.gain.setValueAtTime(r.g.gain.value,r.ctx.currentTime);
+      r.g.gain.linearRampToValueAtTime(0,r.ctx.currentTime+1);
+      setTimeout(()=>{ try{ r.src.stop(); r.ctx.close(); }catch(e){} },1200);
+    }
+  }catch(e){}
+}
 function setRain(on){
+  rainSound(on);
   if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   rainC.classList.toggle("on",on);
   if(on && !rainRun){ rainSize(); rainRun=true; drops=Array.from({length:Math.round(innerWidth/7)},()=>newDrop(true)); rainFrame(); }
@@ -681,22 +733,48 @@ function buildCards(grid,list,emptyMsg){
     grid.appendChild(b);
   });
 }
-buildCards($("memGrid"),MEMORIES,"No memories yet.");
 buildCards($("drawGrid"),DRAWINGS,"No drawings yet.");
+
+/* ===== Star game on the Memories page ===== */
+let starsGot=0;
+(function buildSky(){
+  const sky=$("sky");
+  for(let i=0;i<46;i++){
+    const t=el("span","tw"); const z=1+Math.random()*2;
+    t.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${z}px;height:${z}px;animation-delay:${-Math.random()*3}s`;
+    sky.appendChild(t);
+  }
+  STARS.forEach((s,n)=>{
+    const b=el("button","star","★"); b.type="button"; b.setAttribute("aria-label","Star "+(n+1));
+    const sx=n%2?-1:1;
+    b.style.cssText=`left:${s.x}%;top:${s.y}%;--dx:${sx*(26+n*8)}px;--dy:${-sx*(18+n*6)}px;animation-duration:${5+n}s,1.8s`;
+    b.appendChild(el("i",null,String(n+1)));
+    b.onclick=()=>catchStar(b,n);
+    sky.appendChild(b);
+  });
+  $("starCount").textContent=`★ 0/${STARS.length}`;
+})();
+function catchStar(b,n){
+  b.classList.add("got"); sfx("pick"); starsGot++;
+  $("starCount").textContent=`★ ${starsGot}/${STARS.length}`;
+  $("chips").appendChild(el("span","chip","★ "+STARS[n].word));
+  $("scNo").textContent=`Memory ${n+1}`; $("scTitle").textContent=STARS[n].word; $("scText").textContent=STARS[n].text;
+  setTimeout(()=>{ $("starCard").classList.add("on"); $("scOk").focus(); },350);
+}
+$("scOk").onclick=()=>{ $("starCard").classList.remove("on"); if(starsGot>=STARS.length) allStars(); };
+function allStars(){
+  $("skyHint").textContent="All the stars are yours ✨";
+  $("toDraw").disabled=false; confetti(); sfx("win");
+}
 
 /* ===== Page flow: game -> letter -> memories -> drawings ===== */
 // Pages with no loaded photos are skipped, so the gift never shows empty boxes.
 const has=g=>g.querySelector(".hcard");
 const toEnd=()=>{ show("theend"); confetti(); sfx("win"); };
-$("toMem").onclick=()=>{ if(has($("memGrid"))) show("memories"); else if(has($("drawGrid"))) show("drawings"); else toEnd(); };
+$("toMem").onclick=()=>show("memories");
 $("toDraw").onclick=()=>{ if(has($("drawGrid"))) show("drawings"); else toEnd(); };
 $("toEnd").onclick=toEnd;
 $("restart").onclick=()=>{ if(synth) synth.cancel(); updateFound(); show("title"); };
-$("giftBtn").onclick=()=>{
-  const g=$("giftBtn"); if(g.classList.contains("open")) return;
-  g.classList.add("open"); sfx("win"); confetti();
-  setTimeout(()=>{ show("title"); g.classList.remove("open"); },1800);
-};
 
 /* ===== Polish: sound effects, scenes, chapter cards, hearts, confetti ===== */
 let AC=null;
@@ -750,29 +828,6 @@ function confetti(){
   })();
 }
 
-/* ===== Secret code gate ===== */
-const SECRET="2002";   // change the code here
-const HINTS=["It's four digits. Think of a year that matters a lot to you.","It's the year you were born.","It starts with 20 and ends with 02."];
-let hintLvl=0;
-function showHint(){
-  const i=Math.min(hintLvl,HINTS.length-1);
-  $("lockHint").textContent=`Hint ${i+1}: ${HINTS[i]}`;
-  if(hintLvl<HINTS.length) hintLvl++;
-}
-function tryCode(){
-  const v=$("code").value.replace(/\D/g,"");
-  if(v===SECRET){
-    sfx("win"); $("lockMsg").style.color="#7dffa0"; $("lockMsg").textContent="Unlocked!";
-    setTimeout(()=>show("gift"),600);
-    return;
-  }
-  const b=$("lockBox"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
-  $("lockMsg").style.color=""; $("lockMsg").textContent=v?"Wrong! Try again, baka.":"Type the code first.";
-  if(v) showHint();
-}
-$("unlock").onclick=tryCode;
-$("needHint").onclick=showHint;
-$("code").addEventListener("keydown",e=>{ if(e.key==="Enter") tryCode(); });
 </script>
 </body>
 </html>
