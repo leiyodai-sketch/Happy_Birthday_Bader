@@ -215,6 +215,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .blbl{font-family:"Chewy","Comic Sans MS","Chalkboard SE",cursive;font-size:clamp(34px,11vh,64px);line-height:1;color:#ffd166;text-shadow:3px 3px 0 var(--red),0 0 22px #ff7a2f88;display:inline-block;transform:rotate(-4deg);animation:silly 1.4s ease-in-out infinite}
 @keyframes silly{0%,100%{transform:rotate(-4deg) scale(1)}25%{transform:rotate(3deg) scale(1.08)}50%{transform:rotate(-2deg) scale(.96)}75%{transform:rotate(5deg) scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.blbl{animation:none}}
+#addDraw[hidden],#drawMsg[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -259,8 +260,9 @@ button{font:inherit;color:inherit;cursor:pointer}
   </section>
 
   <section class="screen" id="drawings">
-    <div class="head"><h2>My Drawings ♥</h2><button class="btn" id="toEnd">Finish ›</button></div>
-    <div class="scroller"><div id="drawGrid"></div></div>
+    <div class="head"><h2>My Drawings ♥</h2><button class="btn" id="addDraw" hidden>＋ Add drawing</button><button class="btn" id="toEnd">Finish ›</button></div>
+    <input type="file" id="drawFile" accept="image/*" multiple hidden>
+    <div class="scroller"><p id="drawMsg" class="empty" hidden></p><div id="drawGrid"></div></div>
   </section>
 
   <section class="screen" id="theend">
@@ -341,6 +343,12 @@ const STARS = [
   {word:"My safe place", x:48, y:38, text:"That's how I started to feel safe with you every single time. I fall asleep in your arms, and sometimes I feel like you're my own son. I'm always more afraid for you than for myself, and I try to help you with everything I can."},
   {word:"My whole world", x:6, y:62, text:"That's how you came to mean more to me than just a very special person. You became my own little world, one I can't leave. You're the only one I let myself be weak in front of, and I never feel at ease when you're not around."}
 ];
+
+// GOOGLE DRIVE for the Drawings page (fill these 3 values in).
+// API_KEY: Google Cloud API key (Drive API enabled), restricted to your site.
+// CLIENT_ID: OAuth Client ID (Web application), needed only to upload.
+// FOLDER_ID: the Drive folder shared as "Anyone with the link: Viewer".
+const GOOGLE = { API_KEY:"AIzaSyA5L79zZl1-Qla-GyxySprqEbB3SjbURT8", CLIENT_ID:"956878538705-ui0c321uhn7jppdmvd843el8qknq0lbv.apps.googleusercontent.com", FOLDER_ID:"1EyXPLqi_UX76XzBX9IgEVFwR2VGq44oq" };
 
 // DRAWINGS page: put pictures in the "drawings" folder.
 const DRAWINGS = [
@@ -735,6 +743,61 @@ function buildCards(grid,list,emptyMsg){
 }
 buildCards($("drawGrid"),DRAWINGS,"No drawings yet.");
 
+/* ===== Drawings from Google Drive (view with API key, upload with sign-in) ===== */
+const driveOn=!!(GOOGLE.API_KEY&&GOOGLE.FOLDER_ID);
+const ownerMode=new URLSearchParams(location.search).has("edit");
+const drawMsg=t=>{ const m=$("drawMsg"); m.textContent=t||""; m.hidden=!t; };
+async function loadDrive(){
+  if(!driveOn) return;
+  try{
+    const q=`'${GOOGLE.FOLDER_ID}' in parents and mimeType contains 'image/' and trashed=false`;
+    const url="https://www.googleapis.com/drive/v3/files?pageSize=200&orderBy=createdTime&fields=files(id,name)"
+      +"&q="+encodeURIComponent(q)+"&key="+encodeURIComponent(GOOGLE.API_KEY);
+    const r=await fetch(url); if(!r.ok) throw new Error(r.status);
+    const files=(await r.json()).files||[];
+    DRAWINGS.length=0;
+    files.forEach(f=>DRAWINGS.push({img:`https://drive.google.com/thumbnail?id=${f.id}&sz=w1200`,title:f.name.replace(/\.[^.]+$/,"")}));
+    const g=$("drawGrid"); g.innerHTML=""; buildCards(g,DRAWINGS,"No drawings yet.");
+  }catch(e){ drawMsg("Couldn't load the drawings right now."); }
+}
+let gTok=null, gTokExp=0, gClient=null;
+function loadGIS(){
+  return new Promise((ok,no)=>{
+    if(window.google&&google.accounts&&google.accounts.oauth2) return ok();
+    const sc=document.createElement("script"); sc.src="https://accounts.google.com/gsi/client"; sc.async=true;
+    sc.onload=ok; sc.onerror=()=>no(new Error("gis")); document.head.appendChild(sc);
+  });
+}
+async function getToken(){
+  if(gTok&&Date.now()<gTokExp) return gTok;
+  await loadGIS();
+  return new Promise((ok,no)=>{
+    if(!gClient) gClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE.CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:()=>{}});
+    gClient.callback=r=>{ if(r.error) return no(new Error(r.error)); gTok=r.access_token; gTokExp=Date.now()+(r.expires_in-60)*1000; ok(gTok); };
+    gClient.requestAccessToken({prompt:gTok?"":"consent"});
+  });
+}
+async function uploadOne(file,tok){
+  const b="mira"+Math.random().toString(36).slice(2);
+  const meta=JSON.stringify({name:file.name,parents:[GOOGLE.FOLDER_ID]});
+  const body=new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${b}\r\nContent-Type: ${file.type||"application/octet-stream"}\r\n\r\n`,file,`\r\n--${b}--`]);
+  const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",{method:"POST",headers:{Authorization:"Bearer "+tok,"Content-Type":"multipart/related; boundary="+b},body});
+  if(!r.ok) throw new Error("upload "+r.status);
+}
+if(ownerMode&&driveOn&&GOOGLE.CLIENT_ID){
+  $("addDraw").hidden=false;
+  $("addDraw").onclick=()=>$("drawFile").click();
+  $("drawFile").onchange=async e=>{
+    const files=[...e.target.files]; e.target.value=""; if(!files.length) return;
+    try{
+      const tok=await getToken(); let n=0;
+      for(const f of files){ drawMsg(`Uploading ${++n} of ${files.length}...`); await uploadOne(f,tok); }
+      drawMsg("Done ♥"); await loadDrive(); setTimeout(()=>drawMsg(""),2500);
+    }catch(err){ drawMsg("Upload failed. Check the Google setup and try again."); }
+  };
+}
+loadDrive();
+
 /* ===== Star game on the Memories page ===== */
 let starsGot=0;
 (function buildSky(){
@@ -772,7 +835,7 @@ function allStars(){
 const has=g=>g.querySelector(".hcard");
 const toEnd=()=>{ show("theend"); confetti(); sfx("win"); };
 $("toMem").onclick=()=>show("memories");
-$("toDraw").onclick=()=>{ if(has($("drawGrid"))) show("drawings"); else toEnd(); };
+$("toDraw").onclick=()=>{ if(driveOn||has($("drawGrid"))) show("drawings"); else toEnd(); };
 $("toEnd").onclick=toEnd;
 $("restart").onclick=()=>{ if(synth) synth.cancel(); updateFound(); show("title"); };
 
