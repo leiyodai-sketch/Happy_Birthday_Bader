@@ -76,13 +76,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .scroller{flex:1;min-height:0;overflow-y:auto;padding:14px 8px 26px}
 .ph{display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;width:100%;height:100%;min-height:120px;background:repeating-linear-gradient(45deg,#2b1a3a,#2b1a3a 10px,#241532 10px,#241532 20px);font-size:14px;opacity:.85;word-break:break-all}
 :root{--g1:#ff7a2f;--g2:#d3202e;--glow:#ff3b4e}
-#drawings,#drawGrid,#lbMedia.alt{--g1:#ffd166;--g2:#ff4b8a;--glow:#ff4b8a}
+#lbMedia.alt{--g1:#ffd166;--g2:#ff4b8a;--glow:#ff4b8a}
 .floaties{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
 .floaties span{position:absolute;bottom:-40px;color:#ff3b4e38;animation:floatup linear infinite}
 #drawings .floaties span{color:#ffd16638}
 @keyframes floatup{to{transform:translateY(-115vh) rotate(25deg)}}
 .head,.scroller{position:relative;z-index:1}
-#memGrid,#drawGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:22px 20px;justify-items:center;padding:6px 4px}
+#memGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:22px 20px;justify-items:center;padding:6px 4px}
 .hcard{font:inherit;color:inherit;background:none;border:0;cursor:pointer;width:100%;max-width:230px;text-align:center;padding:0}
 .hcard:nth-child(even){margin-top:22px}
 .heart{position:relative;width:100%;aspect-ratio:1/.92;filter:drop-shadow(0 0 10px var(--glow));animation:beat 2.8s ease-in-out infinite;animation-delay:var(--d,0s)}
@@ -215,7 +215,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .blbl{font-family:"Chewy","Comic Sans MS","Chalkboard SE",cursive;font-size:clamp(34px,11vh,64px);line-height:1;color:#ffd166;text-shadow:3px 3px 0 var(--red),0 0 22px #ff7a2f88;display:inline-block;transform:rotate(-4deg);animation:silly 1.4s ease-in-out infinite}
 @keyframes silly{0%,100%{transform:rotate(-4deg) scale(1)}25%{transform:rotate(3deg) scale(1.08)}50%{transform:rotate(-2deg) scale(.96)}75%{transform:rotate(5deg) scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.blbl{animation:none}}
-#addDraw[hidden],#drawMsg[hidden]{display:none}
+#bgfx{position:absolute;inset:-6px -14px -8px;z-index:-1;pointer-events:none;overflow:hidden}
+#bgfx::before{content:"";position:absolute;border-radius:50%;width:70px;height:70px}
+#bgfx[data-k=dusk]::before{right:12%;top:46%;background:radial-gradient(circle,#ffe29a,#ff7a2f 60%,transparent 72%);box-shadow:0 0 60px #ff7a2f}
+#bgfx[data-k=night]::before{right:10%;top:8%;background:radial-gradient(circle at 35% 35%,#fffbe8,#e9e2c0 60%,#bdb58a);box-shadow:0 0 40px #fff7c866}
+#bgfx[data-k=warm]::before{left:50%;top:4%;width:220px;height:220px;margin-left:-110px;background:radial-gradient(circle,#ffb86b77,transparent 70%)}
+#bgfx[data-k=party]::before{left:50%;top:-40px;width:320px;height:320px;margin-left:-160px;background:conic-gradient(#ffd16633,transparent 12%,#ff4b8a33 25%,transparent 37%,#ffd16633 50%,transparent 62%,#ff4b8a33 75%,transparent 87%,#ffd16633);animation:bgspin 16s linear infinite}
+@keyframes bgspin{to{transform:rotate(360deg)}}
+#bgfx::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26%;background:#0c0612d0;clip-path:polygon(0 100%,0 55%,6% 55%,6% 35%,12% 35%,12% 60%,18% 60%,18% 25%,25% 25%,25% 50%,32% 50%,32% 40%,40% 40%,40% 65%,47% 65%,47% 30%,54% 30%,54% 55%,62% 55%,62% 20%,70% 20%,70% 50%,78% 50%,78% 38%,86% 38%,86% 60%,93% 60%,93% 45%,100% 45%,100% 100%)}
+#bgfx[data-k=warm]::after{clip-path:none;height:20%;border-radius:50% 50% 0 0/100% 100% 0 0;background:#2a0d22d0}
+#bgfx[data-k=party]::after{display:none}
+#bgfx span{position:absolute;bottom:-30px;opacity:0;animation:fxup linear infinite}
+@keyframes fxup{10%{opacity:.8}100%{transform:translateY(-105vh) rotate(40deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){#bgfx span,#bgfx::before{animation:none}}
 </style>
 </head>
 <body>
@@ -259,11 +271,6 @@ button{font:inherit;color:inherit;cursor:pointer}
     </div>
   </section>
 
-  <section class="screen" id="drawings">
-    <div class="head"><h2>My Drawings ♥</h2><button class="btn" id="addDraw" hidden>＋ Add drawing</button><button class="btn" id="toEnd">Finish ›</button></div>
-    <input type="file" id="drawFile" accept="image/*" multiple hidden>
-    <div class="scroller"><p id="drawMsg" class="empty" hidden></p><div id="drawGrid"></div></div>
-  </section>
 
   <section class="screen" id="theend">
     <div class="endbox">
@@ -342,19 +349,6 @@ const STARS = [
   {word:"When I fell for you", x:76, y:60, text:"After all those moments, that's when I fell in love with you. In all those moments, you never once said anything wrong about me. You know all my secrets, everything about me, and still you never said one bad word. You were always there for me, even though I upset you so many times."},
   {word:"My safe place", x:48, y:38, text:"That's how I started to feel safe with you every single time. I fall asleep in your arms, and sometimes I feel like you're my own son. I'm always more afraid for you than for myself, and I try to help you with everything I can."},
   {word:"My whole world", x:6, y:62, text:"That's how you came to mean more to me than just a very special person. You became my own little world, one I can't leave. You're the only one I let myself be weak in front of, and I never feel at ease when you're not around."}
-];
-
-// GOOGLE DRIVE for the Drawings page (fill these 3 values in).
-// API_KEY: Google Cloud API key (Drive API enabled), restricted to your site.
-// CLIENT_ID: OAuth Client ID (Web application), needed only to upload.
-// FOLDER_ID: the Drive folder shared as "Anyone with the link: Viewer".
-const GOOGLE = { API_KEY:"AIzaSyA5L79zZl1-Qla-GyxySprqEbB3SjbURT8", CLIENT_ID:"956878538705-ui0c321uhn7jppdmvd843el8qknq0lbv.apps.googleusercontent.com", FOLDER_ID:"1EyXPLqi_UX76XzBX9IgEVFwR2VGq44oq" };
-
-// DRAWINGS page: put pictures in the "drawings" folder.
-const DRAWINGS = [
-  {img:"drawings/01.png", title:"Drawing 1", note:"Add a few words about it."},
-  {img:"drawings/02.png", title:"Drawing 2"},
-  {img:"drawings/03.png", title:"Drawing 3"}
 ];
 
 // Asuka's voice settings (uses the voices built into the browser)
@@ -523,7 +517,7 @@ function sceneRun(id){
   if(id==="end"){
     const kind=pts>=5?"good":pts>=3?"mid":"bad"; const e=ENDINGS[kind].slice();
     e.splice(2,0,DREAM[dream]);
-    confetti(); sfx("win"); return play(e,()=>endCard(kind,showFinal));
+    confetti(); sfx(kind==="bad"?"sad":"win"); return play(e,()=>endCard(kind,showFinal));
   }
   const s=S[id];
   play(s.lines,()=>{
@@ -601,6 +595,13 @@ function startMusic(){
   ensureMusic();
   if(SONG.autoplay && au) au.play().catch(()=>{});
 }
+function stopMusic(){
+  pendingPlay=false;
+  if(au) au.pause();
+  if(yt) ytCmd("pauseVideo");
+  setPlaying(false);
+  $("music").style.display="none";
+}
 function renderSong(){
   const box=$("songBox"); if(!box) return; box.innerHTML="";
   box.appendChild(el("p",null,SONG.note));
@@ -663,14 +664,15 @@ function setRain(on){
 }
 
 $("start").onclick=()=>{
-  pts=0; dream="family"; setHearts(); show("game"); $("choices").innerHTML="";
-  $("tools").style.display="flex"; $("voiceBtn").style.display=""; startMusic(); scene("intro");
+  sfx("start"); pts=0; dream="family"; setHearts(); show("game"); $("choices").innerHTML="";
+  $("tools").style.display="flex"; $("voiceBtn").style.display=""; stopMusic(); scene("intro");
   try{ const d=document.documentElement; (d.requestFullscreen?d.requestFullscreen():Promise.resolve()).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape")).catch(()=>{}); }catch(e){}
 };
 $("bubble").onclick=next;
 document.addEventListener("keydown",e=>{ if((e.key===" "||e.key==="Enter")&&$("game").classList.contains("on")&&!$("choices").children.length){e.preventDefault();next();} });
 
 $("mail").onclick=()=>{
+  startMusic();
   $("mail").style.display="none"; $("cap").style.display="none";
   const L=$("letter");
   L.innerHTML=`<h2></h2><p></p><div class="sig"></div>`;
@@ -694,7 +696,7 @@ function heartOf(inner,extra){
   const w=el("div","heart"), sh=el("div","shape");
   inner.classList.add("inner"); sh.appendChild(inner); w.appendChild(sh); if(extra) w.appendChild(extra); return w;
 }
-function openLB(list,i){ const it=list[i]; isDraw=(list===DRAWINGS); view=list.filter(x=>!x.__bad); vi=view.indexOf(it); showLB(); $("lb").classList.add("on"); $("lbX").focus(); }
+function openLB(list,i){ const it=list[i]; isDraw=false; view=list.filter(x=>!x.__bad); vi=view.indexOf(it); showLB(); $("lb").classList.add("on"); $("lbX").focus(); }
 function showLB(){
   const it=view[vi], m=$("lbMedia"), cap=$("lbCap"); m.innerHTML=""; cap.innerHTML="";
   const isImg=!it.video && it.img, isNote=!it.video && !it.img;
@@ -723,7 +725,7 @@ function floaties(id){
   for(let i=0;i<14;i++){ const h=el("span",null,"♥"); h.style.cssText=`left:${Math.random()*100}%;font-size:${12+Math.random()*22}px;animation-duration:${8+Math.random()*10}s;animation-delay:${-Math.random()*14}s`; f.appendChild(h); }
   $(id).prepend(f);
 }
-floaties("memories"); floaties("drawings");
+floaties("memories");
 
 function buildCards(grid,list,emptyMsg){
   if(!list.length) grid.appendChild(el("p","empty",emptyMsg));
@@ -741,62 +743,6 @@ function buildCards(grid,list,emptyMsg){
     grid.appendChild(b);
   });
 }
-buildCards($("drawGrid"),DRAWINGS,"No drawings yet.");
-
-/* ===== Drawings from Google Drive (view with API key, upload with sign-in) ===== */
-const driveOn=!!(GOOGLE.API_KEY&&GOOGLE.FOLDER_ID);
-const ownerMode=new URLSearchParams(location.search).has("edit");
-const drawMsg=t=>{ const m=$("drawMsg"); m.textContent=t||""; m.hidden=!t; };
-async function loadDrive(){
-  if(!driveOn) return;
-  try{
-    const q=`'${GOOGLE.FOLDER_ID}' in parents and mimeType contains 'image/' and trashed=false`;
-    const url="https://www.googleapis.com/drive/v3/files?pageSize=200&orderBy=createdTime&fields=files(id,name)"
-      +"&q="+encodeURIComponent(q)+"&key="+encodeURIComponent(GOOGLE.API_KEY);
-    const r=await fetch(url); if(!r.ok) throw new Error(r.status);
-    const files=(await r.json()).files||[];
-    DRAWINGS.length=0;
-    files.forEach(f=>DRAWINGS.push({img:`https://drive.google.com/thumbnail?id=${f.id}&sz=w1200`,title:f.name.replace(/\.[^.]+$/,"")}));
-    const g=$("drawGrid"); g.innerHTML=""; buildCards(g,DRAWINGS,"No drawings yet.");
-  }catch(e){ drawMsg("Couldn't load the drawings right now."); }
-}
-let gTok=null, gTokExp=0, gClient=null;
-function loadGIS(){
-  return new Promise((ok,no)=>{
-    if(window.google&&google.accounts&&google.accounts.oauth2) return ok();
-    const sc=document.createElement("script"); sc.src="https://accounts.google.com/gsi/client"; sc.async=true;
-    sc.onload=ok; sc.onerror=()=>no(new Error("gis")); document.head.appendChild(sc);
-  });
-}
-async function getToken(){
-  if(gTok&&Date.now()<gTokExp) return gTok;
-  await loadGIS();
-  return new Promise((ok,no)=>{
-    if(!gClient) gClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE.CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:()=>{}});
-    gClient.callback=r=>{ if(r.error) return no(new Error(r.error)); gTok=r.access_token; gTokExp=Date.now()+(r.expires_in-60)*1000; ok(gTok); };
-    gClient.requestAccessToken({prompt:gTok?"":"consent"});
-  });
-}
-async function uploadOne(file,tok){
-  const b="mira"+Math.random().toString(36).slice(2);
-  const meta=JSON.stringify({name:file.name,parents:[GOOGLE.FOLDER_ID]});
-  const body=new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${b}\r\nContent-Type: ${file.type||"application/octet-stream"}\r\n\r\n`,file,`\r\n--${b}--`]);
-  const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",{method:"POST",headers:{Authorization:"Bearer "+tok,"Content-Type":"multipart/related; boundary="+b},body});
-  if(!r.ok) throw new Error("upload "+r.status);
-}
-if(ownerMode&&driveOn&&GOOGLE.CLIENT_ID){
-  $("addDraw").hidden=false;
-  $("addDraw").onclick=()=>$("drawFile").click();
-  $("drawFile").onchange=async e=>{
-    const files=[...e.target.files]; e.target.value=""; if(!files.length) return;
-    try{
-      const tok=await getToken(); let n=0;
-      for(const f of files){ drawMsg(`Uploading ${++n} of ${files.length}...`); await uploadOne(f,tok); }
-      drawMsg("Done ♥"); await loadDrive(); setTimeout(()=>drawMsg(""),2500);
-    }catch(err){ drawMsg("Upload failed. Check the Google setup and try again."); }
-  };
-}
-loadDrive();
 
 /* ===== Star game on the Memories page ===== */
 let starsGot=0;
@@ -830,37 +776,60 @@ function allStars(){
   $("toDraw").disabled=false; confetti(); sfx("win");
 }
 
-/* ===== Page flow: game -> letter -> memories -> drawings ===== */
+/* ===== Page flow: game -> letter -> memories ===== */
 // Pages with no loaded photos are skipped, so the gift never shows empty boxes.
 const has=g=>g.querySelector(".hcard");
 const toEnd=()=>{ show("theend"); confetti(); sfx("win"); };
 $("toMem").onclick=()=>show("memories");
-$("toDraw").onclick=()=>{ if(driveOn||has($("drawGrid"))) show("drawings"); else toEnd(); };
-$("toEnd").onclick=toEnd;
-$("restart").onclick=()=>{ if(synth) synth.cancel(); updateFound(); show("title"); };
+$("toDraw").onclick=toEnd;
+$("restart").onclick=()=>{ stopMusic(); if(synth) synth.cancel(); updateFound(); show("title"); };
 
 /* ===== Polish: sound effects, scenes, chapter cards, hearts, confetti ===== */
 let AC=null;
 function sfx(k){
   try{
-    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
-    const N={tick:[[880,.03]],pick:[[660,.07],[990,.1]],card:[[392,.1],[523,.2]],win:[[523,.12],[659,.12],[784,.12],[1047,.32]]}[k]||[];
-    let t=AC.currentTime;
-    N.forEach(([f,d])=>{
-      const o=AC.createOscillator(), g=AC.createGain();
-      o.type=k==="tick"?"square":"triangle"; o.frequency.value=f;
-      g.gain.setValueAtTime(k==="tick"?.012:.05,t); g.gain.exponentialRampToValueAtTime(.0001,t+d+.08);
-      o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+d+.1); t+=d;
-    });
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume();
+    const T=AC.currentTime;
+    const tone=(f,d,t0=0,type="triangle",v=.05,f2)=>{
+      const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.setValueAtTime(f,T+t0);
+      if(f2) o.frequency.exponentialRampToValueAtTime(f2,T+t0+d);
+      g.gain.setValueAtTime(v,T+t0); g.gain.exponentialRampToValueAtTime(.0001,T+t0+d+.08);
+      o.connect(g); g.connect(AC.destination); o.start(T+t0); o.stop(T+t0+d+.1);
+    };
+    const noise=(d,t0=0,v=.04,f=1500)=>{
+      const n=Math.floor(AC.sampleRate*d), buf=AC.createBuffer(1,n,AC.sampleRate), a=buf.getChannelData(0);
+      for(let i=0;i<n;i++) a[i]=(Math.random()*2-1)*(1-i/n);
+      const s=AC.createBufferSource(); s.buffer=buf;
+      const fl=AC.createBiquadFilter(); fl.type="bandpass"; fl.frequency.setValueAtTime(f/3,T+t0); fl.frequency.exponentialRampToValueAtTime(f,T+t0+d);
+      const g=AC.createGain(); g.gain.value=v; s.connect(fl); fl.connect(g); g.connect(AC.destination); s.start(T+t0);
+    };
+    switch(k){
+      case "tick": tone(880,.03,0,"square",.012); break;
+      case "pick": tone(660,.07); tone(990,.1,.07); break;
+      case "card": noise(.5,0,.05,4000); tone(392,.1,.15); tone(523,.2,.25); break;
+      case "win": [523,659,784,1047].forEach((f,i)=>tone(f,i==3?.32:.12,i*.12)); break;
+      case "angry": tone(320,.3,0,"sawtooth",.04,110); noise(.15,0,.05,900); break;
+      case "happy": [784,988,1319,1568].forEach((f,i)=>tone(f,.08,i*.06,"sine",.045)); break;
+      case "blush": tone(880,.25,0,"sine",.04); tone(1175,.35,.12,"sine",.035); break;
+      case "heart": tone(523,.12,0,"sine",.05,784); tone(784,.2,.1,"sine",.04); break;
+      case "sad": [392,349,294,220].forEach((f,i)=>tone(f,.2,i*.2)); break;
+      case "start": noise(.4,0,.05,5000); tone(440,.15); tone(659,.15,.12); tone(880,.3,.24); break;
+    }
   }catch(e){}
 }
 const BG={intro:"dusk",q2:"night",q3:"warm",end:"party"};
-function setBG(id){ $("game").dataset.bg=BG[id]||"dusk"; }
-function animate(f){ const p=$("portrait"); p.className=""; void p.offsetWidth; p.className="m-"+f; }
+const FX={dusk:"🌸",night:"⭐",warm:"✨",party:"🎈"};
+function setBG(id){
+  const k=BG[id]||"dusk"; $("game").dataset.bg=k;
+  let b=$("bgfx"); if(!b){ b=el("div"); b.id="bgfx"; $("game").prepend(b); }
+  b.dataset.k=k; b.innerHTML="";
+  for(let i=0;i<10;i++){ const f=el("span",null,FX[k]); f.style.cssText=`left:${Math.random()*100}%;font-size:${12+Math.random()*16}px;animation-duration:${9+Math.random()*9}s;animation-delay:${-Math.random()*12}s`; b.appendChild(f); }
+}
+function animate(f){ if(f==="angry"||f==="happy"||f==="blush") sfx(f); const p=$("portrait"); p.className=""; void p.offsetWidth; p.className="m-"+f; }
 function setHearts(pop){
   const h=$("hearts"), n=Math.floor(pts/2); h.innerHTML="";
   for(let i=0;i<3;i++) h.appendChild(el("span",i<n?"on":"",i<n?"♥":"♡"));
-  if(pop){ h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop"); }
+  if(pop){ sfx("heart"); h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop"); }
 }
 const CHAPTERS={intro:["Chapter 1","Late Again"],q2:["Chapter 2","Dreams"],q3:["Chapter 3","The Gift"]};
 function card(c,cb){
